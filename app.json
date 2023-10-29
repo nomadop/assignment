@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "paidy-assignment",
+    "slug": "paidy-assignment",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
