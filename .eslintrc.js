@@ -25,7 +25,6 @@ module.exports = {
       https://eslint.org/docs/latest/rules/
     */
     'require-await': 2,
-    'operator-linebreak': ['error', 'before', { overrides: { '=': 'none' } }],
     'prefer-destructuring': ['error', { AssignmentExpression: { array: false } }],
     'comma-dangle': [
       2,
