@@ -35,7 +35,9 @@ describe('TodoList', () => {
       </RecoilRoot>,
     );
 
+    // Item in todo section is black
     expect(await findByDisplayValue('do something')).toHaveStyle({ color: '#000' });
+    // Item in done section is gray
     expect(await findByDisplayValue('done thing')).toHaveStyle({ color: '#64748b' });
   });
 
@@ -65,6 +67,7 @@ describe('TodoList', () => {
     expect(await findByDisplayValue('do some another thing')).toBeOnTheScreen();
     expect(await findAllByTestId('todoItem')).toHaveLength(2);
 
+    // Should not add blank item
     await act(() => ref?.startAdding());
     await user.type(await findByTestId('addTodoTextInput'), '      ', { submitEditing: true });
     expect(await findAllByTestId('todoItem')).toHaveLength(2);

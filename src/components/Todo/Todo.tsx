@@ -1,8 +1,6 @@
 import type { PropsWithChildren } from 'react';
 import React, { createRef, useEffect, useRef, useState } from 'react';
 import { Alert, Animated, DeviceEventEmitter, Keyboard, Platform, Text, View } from 'react-native';
-import type { TextInputFocusEventData } from 'react-native/Libraries/Components/TextInput/TextInput';
-import type { NativeSyntheticEvent } from 'react-native/Libraries/Types/CoreEventTypes';
 import { RectButton, TextInput } from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { useRecoilValue } from 'recoil';
@@ -40,18 +38,16 @@ function Todo({ item }: Props) {
   const authenticate = useAuthenticate();
   const isAuthenticated = useRecoilValue(isAuthenticatedSelector);
   const [input, setInput] = useState(item.content);
-  const handleFocus = async (event: NativeSyntheticEvent<TextInputFocusEventData>) => {
-    try {
-      await authenticate();
-      DeviceEventEmitter.emit('CLOSE_SWIPEABLE', item.id);
-    } catch (e) {
-      event.persist();
-    }
+
+  const handleFocus = () => {
+    // close opened swipeable actions when start editing
+    DeviceEventEmitter.emit('CLOSE_SWIPEABLE', item.id);
   };
 
   const toggleState = () => {
     authenticate()
       .then(() => {
+        // fade out before execute update state action
         Animated.timing(fadeOut.current, {
           toValue: 0,
           duration: 200,
@@ -69,6 +65,7 @@ function Todo({ item }: Props) {
   const handleDelete = () => {
     authenticate()
       .then(() => {
+        // fade out before execute delete action
         Animated.timing(fadeOut.current, {
           toValue: 0,
           duration: 200,
@@ -81,6 +78,7 @@ function Todo({ item }: Props) {
   };
 
   const handleUpdate = (content: string) => {
+    // if delete all content when submitting then execute delete action, otherwise update the content
     if (content.length > 0) {
       updateTodo(item.id, (val) => ({ ...val, content: content.trim() }));
     } else {
@@ -93,7 +91,6 @@ function Todo({ item }: Props) {
       <View className="w-40 flex-row">
         <RightAction progress={progress} x={160} fadeOut={fadeOut.current}>
           <RectButton
-            testID="todoItemToggleState"
             className={`w-screen px-1 flex-1 justify-center ${
               item.status === 'done' ? 'bg-slate-300' : 'bg-green-400'
             }`}
@@ -111,6 +108,7 @@ function Todo({ item }: Props) {
   };
 
   useEffect(() => {
+    // when CLOSE_SWIPEABLE event trigger, check if it's send by other swipeable item. If so, close this one.
     const subscription = DeviceEventEmitter.addListener('CLOSE_SWIPEABLE', (id?: string) => {
       if (swipeableRef.current && id !== item.id) {
         swipeableRef.current?.close();
@@ -131,11 +129,13 @@ function Todo({ item }: Props) {
       rightThreshold={80}
       renderRightActions={renderRightActions}
       onSwipeableWillOpen={() => {
+        // dismiss keyboard and emit CLOSE_SWIPEABLE event to close other opened swipeable item
         Keyboard.dismiss();
         DeviceEventEmitter.emit('CLOSE_SWIPEABLE', item.id);
       }}>
       <Animated.View
         className={`ml-4 border-b border-slate-300 pl-2 ${Platform.select({
+          // vertical align of TextInput text is different between IOS and Android, adjust it with different padding.
           ios: 'pt-1 pb-3',
           android: 'py-2',
         })} pr-4 justify-center`}

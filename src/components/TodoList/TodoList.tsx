@@ -14,6 +14,7 @@ const TodoList = forwardRef<TodoListRef>((_props, ref) => {
   const todoList = useRecoilValue(todoItems);
   const addTodo = useAddTodo();
   const sections = useMemo(() => {
+    // Append an empty text input at the bottom to let user add new item
     const todos = [...todoList.filter(({ status }) => status === 'todo'), ...(isAdding ? [null] : [])];
     const dones = todoList.filter(({ status }) => status === 'done');
     const data = [
@@ -30,6 +31,7 @@ const TodoList = forwardRef<TodoListRef>((_props, ref) => {
     }
     return data;
   }, [todoList, isAdding]);
+
   const inputRef = createRef<TextInput>();
   const scrollRef = createRef<KeyboardAwareSectionList>();
   const handleAddTodo = (content: string) => {

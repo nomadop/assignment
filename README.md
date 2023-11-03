@@ -45,9 +45,9 @@ Quick Start
 - Type check with TypeScript,
 ```npm run typecheck```
 - Style check with ESLint,
-```npm run lint``` or ```npm run lint -- --fix```
+```npm run lint``` / ```npm run lint -- --fix```
 - Unit test with Jest,
-```npm run test```
+```npm run test``` / ```npm run test -- --coverage```
 
 CONFIGURATION
 -----------
