@@ -13,17 +13,22 @@ const TodoList = forwardRef<TodoListRef>((_props, ref) => {
   const [isAdding, setIsAdding] = useState(false);
   const todoList = useRecoilValue(todoItems);
   const addTodo = useAddTodo();
-  const data = useMemo(() => {
-    return [
+  const sections = useMemo(() => {
+    const todos = [...todoList.filter(({ status }) => status === 'todo'), ...(isAdding ? [null] : [])];
+    const dones = todoList.filter(({ status }) => status === 'done');
+    const data = [
       {
         title: 'Todo',
-        data: [...todoList.filter(({ status }) => status === 'todo'), ...(isAdding ? [null] : [])],
-      },
-      {
-        title: 'Done',
-        data: todoList.filter(({ status }) => status === 'done'),
+        data: todos,
       },
     ];
+    if (dones.length > 0) {
+      data.push({
+        title: 'Done',
+        data: dones,
+      });
+    }
+    return data;
   }, [todoList, isAdding]);
   const inputRef = createRef<TextInput>();
   const scrollRef = createRef<KeyboardAwareSectionList>();
@@ -31,7 +36,9 @@ const TodoList = forwardRef<TodoListRef>((_props, ref) => {
     if (inputRef.current) {
       inputRef.current.clear();
       addTodo(content.trim());
-      scrollRef.current?.scrollToFocusedInput(inputRef.current);
+      if (typeof scrollRef.current?.scrollToFocusedInput === 'function') {
+        scrollRef.current?.scrollToFocusedInput(inputRef.current);
+      }
     }
   };
 
@@ -49,7 +56,7 @@ const TodoList = forwardRef<TodoListRef>((_props, ref) => {
     <KeyboardAwareSectionList
       ref={scrollRef}
       className="flex-1"
-      sections={data}
+      sections={sections}
       keyExtractor={(item) => item?.id ?? 'adding'}
       renderItem={({ item }) => {
         if (item !== null) {
@@ -61,6 +68,7 @@ const TodoList = forwardRef<TodoListRef>((_props, ref) => {
             <TextInput
               autoFocus
               ref={inputRef}
+              testID="addTodoTextInput"
               className="text-2xl"
               blurOnSubmit={false}
               returnKeyType="next"
@@ -71,7 +79,11 @@ const TodoList = forwardRef<TodoListRef>((_props, ref) => {
           </View>
         );
       }}
-      renderSectionHeader={({ section: { title } }) => <Text className="ml-4 text-3xl bg-white">{title}</Text>}
+      renderSectionHeader={({ section: { title } }) => (
+        <View className="pt-2 bg-white">
+          <Text className="ml-4 text-3xl">{title}</Text>
+        </View>
+      )}
     />
   );
 });

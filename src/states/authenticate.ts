@@ -1,7 +1,7 @@
 import { authenticateAsync, getEnrolledLevelAsync, SecurityLevel } from 'expo-local-authentication';
 import { atom, selector, useRecoilCallback } from 'recoil';
 
-const secureLevel = atom<SecurityLevel>({
+export const secureLevel = atom<SecurityLevel>({
   key: 'SecureLevel',
   default: SecurityLevel.NONE,
 });

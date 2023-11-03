@@ -7,3 +7,9 @@ declare module 'react-native-gesture-handler' {
     className: string;
   }
 }
+
+declare global {
+  interface Window {
+    __TEST__: boolean;
+  }
+}

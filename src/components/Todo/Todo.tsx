@@ -77,6 +77,7 @@ function Todo({ item }: Props) {
       <View className="w-40 flex-row">
         <RightAction progress={progress} x={160} fadeOut={fadeOut.current}>
           <RectButton
+            testID="todoItemToggleState"
             className={`w-screen px-1 flex-1 justify-center ${
               item.status === 'done' ? 'bg-slate-300' : 'bg-green-400'
             }`}
@@ -109,6 +110,7 @@ function Todo({ item }: Props) {
     <Swipeable
       ref={swipeableRef}
       friction={1}
+      testID="todoItem"
       overshootFriction={8}
       rightThreshold={80}
       renderRightActions={renderRightActions}
@@ -124,7 +126,7 @@ function Todo({ item }: Props) {
           blurOnSubmit
           scrollEnabled={false}
           onFocus={handleFocus}
-          className={`text-2xl${item.status === 'done' ? ' text-slate-500' : ''}`}
+          className={`text-2xl ${item.status === 'done' ? 'text-slate-500' : 'text-black'}`}
           value={input}
           returnKeyType="done"
           onChangeText={setInput}

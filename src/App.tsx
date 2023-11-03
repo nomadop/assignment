@@ -39,7 +39,7 @@ export function App() {
               </Pressable>
               {!isAuthenticated && (
                 <>
-                  <Text className="text-slate-400">Unauthenticated!</Text>
+                  <Text className="text-slate-400">Authentication Required!</Text>
                   <View className="w-20" />
                 </>
               )}

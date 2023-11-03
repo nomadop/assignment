@@ -1,9 +1,9 @@
-import { render } from '@testing-library/react-native';
-import { getEnrolledLevelAsync } from 'expo-local-authentication';
-import type { PropsWithChildren } from 'react';
+import { render, userEvent } from '@testing-library/react-native';
+import { App } from 'App';
+import { authenticateAsync, getEnrolledLevelAsync } from 'expo-local-authentication';
 import React from 'react';
-
-import { App } from './App';
+import { RecoilRoot } from 'recoil';
+import { secureLevel } from 'states/authenticate';
 
 jest.mock('expo-local-authentication', () => {
   return {
@@ -12,25 +12,44 @@ jest.mock('expo-local-authentication', () => {
     getEnrolledLevelAsync: jest.fn().mockResolvedValue(0),
   };
 });
-jest.mock('react-native-safe-area-context', () => {
-  return {
-    SafeAreaProvider: ({ children }: PropsWithChildren) => children,
-    SafeAreaView: ({ children }: PropsWithChildren) => children,
-  };
-});
 
 describe('App', () => {
-  it('should render notification', async () => {
-    (getEnrolledLevelAsync as unknown as jest.SpyInstance).mockResolvedValue(0);
-    const { findByText } = render(<App />);
-
-    expect(await findByText('Authentication Required!')).toBeOnTheScreen();
+  beforeAll(() => {
+    jest.useFakeTimers();
   });
 
-  it('should render todo list', async () => {
-    (getEnrolledLevelAsync as unknown as jest.SpyInstance).mockResolvedValue(1);
-    const { findByText } = render(<App />);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-    expect(await findByText('Todo')).toBeOnTheScreen();
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
+  it('should start authenticate when unauthenticated', async () => {
+    (getEnrolledLevelAsync as unknown as jest.SpyInstance).mockResolvedValue(1);
+    const { findByText, queryByText } = render(
+      <RecoilRoot>
+        <App />
+      </RecoilRoot>,
+    );
+    const user = userEvent.setup();
+
+    expect(await findByText('Authentication Required!')).toBeOnTheScreen();
+    await user.press(await findByText('Add'));
+    expect(authenticateAsync).toBeCalled();
+    expect(queryByText('Authentication Required!')).not.toBeOnTheScreen();
+  });
+
+  it('should not start authenticate when authenticated', async () => {
+    const { findByText } = render(
+      <RecoilRoot initializeState={(snapshot) => snapshot.set(secureLevel, 1)}>
+        <App />
+      </RecoilRoot>,
+    );
+    const user = userEvent.setup();
+
+    await user.press(await findByText('Add'));
+    expect(authenticateAsync).not.toBeCalled();
   });
 });
