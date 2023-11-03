@@ -36,8 +36,7 @@ export const todoItems = atom<TodoItem[]>({
 
 export function useAddTodo() {
   return useRecoilCallback(({ set }) => (content: string) => {
-    const trimmedContent = content.trim();
-    if (trimmedContent.length <= 0) return;
+    if (content.length <= 0) return;
 
     const id = uuid.v4() as string;
     set(todoItems, (items) => {
@@ -47,8 +46,17 @@ export function useAddTodo() {
   });
 }
 
-export function useDeleteTodo(id: string) {
-  return useRecoilCallback(({ set }) => () => {
+export function useUpdateTodo() {
+  return useRecoilCallback(({ set }) => (id: string, updater: (val: TodoItem) => TodoItem) => {
+    set(todoItems, (items) => {
+      const idx = items.findIndex((elem) => elem.id === id);
+      return idx < 0 ? items : [...items.slice(0, idx), updater(items[idx]), ...items.slice(idx + 1)];
+    });
+  });
+}
+
+export function useDeleteTodo() {
+  return useRecoilCallback(({ set }) => (id: string) => {
     set(todoItems, (items) => {
       const idx = items.findIndex((elem) => elem.id === id);
       return idx < 0 ? items : items.slice(0, idx).concat(items.slice(idx + 1));

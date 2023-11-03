@@ -1,12 +1,17 @@
 import { authenticateAsync, getEnrolledLevelAsync, SecurityLevel } from 'expo-local-authentication';
-import { atom, useRecoilCallback } from 'recoil';
+import { atom, selector, useRecoilCallback } from 'recoil';
 
-export const secureLevel = atom<SecurityLevel>({
+const secureLevel = atom<SecurityLevel>({
   key: 'SecureLevel',
   default: SecurityLevel.NONE,
 });
 
-export function useWithAuthenticate() {
+export const isAuthenticated = selector({
+  key: 'IsAuthenticated',
+  get: ({ get }) => get(secureLevel) > SecurityLevel.NONE,
+});
+
+export function useAuthenticate() {
   return useRecoilCallback(({ snapshot, set }) => async () => {
     const currentSecureLevel = await snapshot.getPromise(secureLevel);
     if (currentSecureLevel === SecurityLevel.NONE) {

@@ -1,34 +1,25 @@
+import type { TodoListRef } from 'components/TodoList/TodoList';
 import TodoList from 'components/TodoList/TodoList';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState, Suspense } from 'react';
-import { Pressable, Text, View, Keyboard, DeviceEventEmitter } from 'react-native';
+import React, { createRef, Suspense } from 'react';
+import { Pressable, Text, View, DeviceEventEmitter } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { RecoilRoot } from 'recoil';
-import { useWithAuthenticate } from 'states/authenticate';
+import { RecoilRoot, useRecoilValue } from 'recoil';
+import { isAuthenticated as isAuthenticatedSelector, useAuthenticate } from 'states/authenticate';
 
 export function App() {
-  const [isAdding, setIsAdding] = useState(false);
-
-  const withAuthenticate = useWithAuthenticate();
+  const isAuthenticated = useRecoilValue(isAuthenticatedSelector);
+  const authenticate = useAuthenticate();
+  const todoListRef = createRef<TodoListRef>();
 
   const handlePress = () => {
     DeviceEventEmitter.emit('CLOSE_SWIPEABLE');
-    withAuthenticate().then(() => {
-      setIsAdding(true);
+    authenticate().then(() => {
+      todoListRef.current?.startAdding();
     });
   };
-
-  useEffect(() => {
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-      setIsAdding(false);
-    });
-
-    return () => {
-      hideSubscription.remove();
-    };
-  }, []);
 
   return (
     <Suspense
@@ -40,12 +31,18 @@ export function App() {
       <SafeAreaProvider>
         <GestureHandlerRootView className="flex-1">
           <SafeAreaView className="grow bg-white">
-            <TodoList isAdding={isAdding} />
-            <View>
-              <Pressable className="flex-row items-center px-4 py-2" onPress={handlePress}>
+            <TodoList ref={todoListRef} />
+            <View className="flex-row justify-between items-center">
+              <Pressable className="w-20 flex-row items-center px-4 py-2" onPress={handlePress}>
                 <Icon size={32} name="add-circle" />
                 <Text className="text-2xl pl-1">Add</Text>
               </Pressable>
+              {!isAuthenticated && (
+                <>
+                  <Text className="text-slate-400">Unauthenticated!</Text>
+                  <View className="w-20" />
+                </>
+              )}
             </View>
           </SafeAreaView>
         </GestureHandlerRootView>
