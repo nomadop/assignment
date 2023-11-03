@@ -14,7 +14,7 @@ REQUIREMENTS
 - cocoaPods 1.14.2
 - Android Studio Giraffe 2022.3.1
 - java 11
-- gradle 8.0.1
+- gradle 7.4.2
 
 INSTALLATION
 ------------

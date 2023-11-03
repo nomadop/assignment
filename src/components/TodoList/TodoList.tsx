@@ -83,7 +83,7 @@ const TodoList = forwardRef<TodoListRef>((_props, ref) => {
       }}
       renderSectionHeader={({ section: { title } }) => (
         <View className="pt-2 bg-white">
-          <Text className="ml-4 text-3xl">{title}</Text>
+          <Text className={`ml-4 text-3xl ${title === 'Done' ? 'text-slate-500' : 'text-black'}`}>{title}</Text>
         </View>
       )}
     />
