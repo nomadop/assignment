@@ -4,7 +4,7 @@ import TodoList from 'components/TodoList/TodoList';
 import React from 'react';
 import type { MutableSnapshot } from 'recoil';
 import { RecoilRoot } from 'recoil';
-import { secureLevel } from 'states/authenticate';
+import { isAuthenticated } from 'states/authenticate';
 import type { TodoItem } from 'states/todoList';
 import { todoItems } from 'states/todoList';
 
@@ -23,7 +23,7 @@ describe('TodoList', () => {
 
   it('should show todos', async () => {
     const initializeState = (snapshot: MutableSnapshot) => {
-      snapshot.set(secureLevel, 1);
+      snapshot.set(isAuthenticated, true);
       snapshot.set(todoItems, [
         { id: '1', status: 'todo', content: 'do something' },
         { id: '2', status: 'done', content: 'done thing' },
@@ -41,7 +41,7 @@ describe('TodoList', () => {
 
   it('should add todo', async () => {
     const initializeState = (snapshot: MutableSnapshot) => {
-      snapshot.set(secureLevel, 1);
+      snapshot.set(isAuthenticated, true);
     };
     let ref: TodoListRef | null;
     const { findByDisplayValue, findByTestId, findAllByTestId } = render(
@@ -72,7 +72,7 @@ describe('TodoList', () => {
 
   it('should update todo', async () => {
     const initializeState = (snapshot: MutableSnapshot) => {
-      snapshot.set(secureLevel, 1);
+      snapshot.set(isAuthenticated, true);
       snapshot.set(todoItems, [{ id: '1', status: 'todo', content: 'do something' }] as TodoItem[]);
     };
     const { findByDisplayValue } = render(
@@ -88,7 +88,7 @@ describe('TodoList', () => {
 
   it('should toggle todo', async () => {
     const initializeState = (snapshot: MutableSnapshot) => {
-      snapshot.set(secureLevel, 1);
+      snapshot.set(isAuthenticated, true);
       snapshot.set(todoItems, [{ id: '1', status: 'todo', content: 'do something' }] as TodoItem[]);
     };
     const { findByDisplayValue, findByText } = render(
@@ -114,7 +114,7 @@ describe('TodoList', () => {
 
   it('should delete todo', async () => {
     const initializeState = (snapshot: MutableSnapshot) => {
-      snapshot.set(secureLevel, 1);
+      snapshot.set(isAuthenticated, true);
       snapshot.set(todoItems, [{ id: '1', status: 'todo', content: 'do something' }] as TodoItem[]);
     };
     const { findByDisplayValue, findByText } = render(

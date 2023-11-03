@@ -1,23 +1,28 @@
 import { authenticateAsync, getEnrolledLevelAsync, SecurityLevel } from 'expo-local-authentication';
-import { atom, selector, useRecoilCallback } from 'recoil';
+import { atom, useRecoilCallback } from 'recoil';
 
 export const secureLevel = atom<SecurityLevel>({
   key: 'SecureLevel',
   default: SecurityLevel.NONE,
 });
 
-export const isAuthenticated = selector({
+export const isAuthenticated = atom<boolean>({
   key: 'IsAuthenticated',
-  get: ({ get }) => get(secureLevel) > SecurityLevel.NONE,
+  default: false,
 });
 
 export function useAuthenticate() {
   return useRecoilCallback(({ snapshot, set }) => async () => {
-    const currentSecureLevel = await snapshot.getPromise(secureLevel);
-    if (currentSecureLevel === SecurityLevel.NONE) {
-      await authenticateAsync({ promptMessage: 'Authenticate required before editing!' });
-      const enrolledLevel = await getEnrolledLevelAsync();
-      set(secureLevel, enrolledLevel);
+    const currentAuthenticated = await snapshot.getPromise(isAuthenticated);
+    if (!currentAuthenticated) {
+      const authenticationResult = await authenticateAsync({ promptMessage: 'Authenticate required before editing!' });
+      if (authenticationResult.success) {
+        const enrolledLevel = await getEnrolledLevelAsync();
+        set(secureLevel, enrolledLevel);
+        set(isAuthenticated, true);
+      } else {
+        throw new Error('Failed to authenticate!');
+      }
     }
   });
 }

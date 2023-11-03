@@ -64,7 +64,7 @@ const TodoList = forwardRef<TodoListRef>((_props, ref) => {
         }
 
         return (
-          <View key="adding" className="h-12 ml-4 border-b border-slate-300 pl-2 pt-1 pb-3">
+          <View key="adding" className="ml-4 border-b border-slate-300 pl-2 pt-1 pb-3">
             <TextInput
               autoFocus
               ref={inputRef}

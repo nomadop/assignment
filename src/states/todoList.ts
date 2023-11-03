@@ -31,7 +31,8 @@ export interface TodoItem {
 export const todoItems = atom<TodoItem[]>({
   key: 'TodoItems',
   default: [],
-  // There is an issue on recoil when multiple access async effect, it will cause unit test timeout.
+  // There is an issue on recoil when access multiple async effects within a short time.
+  // in this app, it will cause unit test timeout.
   // On the current released version 0.7.7 it's not fixed yet.
   // https://github.com/facebookexperimental/Recoil/issues/2151
   effects: window.__TEST__ ? [] : [asyncStorageEffect('TodoItems')],

@@ -1,9 +1,12 @@
 import type { PropsWithChildren } from 'react';
 import React, { createRef, useEffect, useRef, useState } from 'react';
-import { Animated, DeviceEventEmitter, Keyboard, Text, TextInput, View } from 'react-native';
-import { RectButton } from 'react-native-gesture-handler';
+import { Alert, Animated, DeviceEventEmitter, Keyboard, Platform, Text, View } from 'react-native';
+import type { TextInputFocusEventData } from 'react-native/Libraries/Components/TextInput/TextInput';
+import type { NativeSyntheticEvent } from 'react-native/Libraries/Types/CoreEventTypes';
+import { RectButton, TextInput } from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
-import { useAuthenticate } from 'states/authenticate';
+import { useRecoilValue } from 'recoil';
+import { isAuthenticated as isAuthenticatedSelector, useAuthenticate } from 'states/authenticate';
 import type { TodoItem } from 'states/todoList';
 import { useDeleteTodo, useUpdateTodo } from 'states/todoList';
 
@@ -35,33 +38,46 @@ function Todo({ item }: Props) {
   const deleteTodo = useDeleteTodo();
   const swipeableRef = createRef<Swipeable>();
   const authenticate = useAuthenticate();
+  const isAuthenticated = useRecoilValue(isAuthenticatedSelector);
   const [input, setInput] = useState(item.content);
-  const handleFocus = async () => {
-    await authenticate();
-    DeviceEventEmitter.emit('CLOSE_SWIPEABLE', item.id);
+  const handleFocus = async (event: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    try {
+      await authenticate();
+      DeviceEventEmitter.emit('CLOSE_SWIPEABLE', item.id);
+    } catch (e) {
+      event.persist();
+    }
   };
 
   const toggleState = () => {
-    authenticate().then(() => {
-      Animated.timing(fadeOut.current, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => {
-        const newState = item.status === 'todo' ? 'done' : 'todo';
-        updateTodo(item.id, (val) => ({ ...val, status: newState }));
+    authenticate()
+      .then(() => {
+        Animated.timing(fadeOut.current, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          const newState = item.status === 'todo' ? 'done' : 'todo';
+          updateTodo(item.id, (val) => ({ ...val, status: newState }));
+        });
+      })
+      .catch(() => {
+        Alert.alert('Failed to authenticate!', 'Authentication is required before you can update todo item.');
       });
-    });
   };
 
   const handleDelete = () => {
-    authenticate().then(() => {
-      Animated.timing(fadeOut.current, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => deleteTodo(item.id));
-    });
+    authenticate()
+      .then(() => {
+        Animated.timing(fadeOut.current, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => deleteTodo(item.id));
+      })
+      .catch(() => {
+        Alert.alert('Failed to authenticate!', 'Authentication is required before you can delete todo item..');
+      });
   };
 
   const handleUpdate = (content: string) => {
@@ -119,11 +135,15 @@ function Todo({ item }: Props) {
         DeviceEventEmitter.emit('CLOSE_SWIPEABLE', item.id);
       }}>
       <Animated.View
-        className="ml-4 border-b border-slate-300 pl-2 pt-1 pb-3 pr-4 justify-center"
+        className={`ml-4 border-b border-slate-300 pl-2 ${Platform.select({
+          ios: 'pt-1 pb-3',
+          android: 'py-2',
+        })} pr-4 justify-center`}
         style={{ opacity: fadeOut.current }}>
         <TextInput
           multiline
           blurOnSubmit
+          editable={isAuthenticated}
           scrollEnabled={false}
           onFocus={handleFocus}
           className={`text-2xl ${item.status === 'done' ? 'text-slate-500' : 'text-black'}`}
